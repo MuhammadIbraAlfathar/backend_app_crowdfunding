@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/handler"
+	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/user"
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
@@ -9,7 +12,7 @@ import (
 
 func main() {
 	dsn := "root:@tcp(127.0.0.1:3306)/startup_crowdfunding?charset=utf8mb4&parseTime=True&loc=Local"
-	_, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -17,8 +20,17 @@ func main() {
 
 	fmt.Println("Connection to database")
 
-	//userRepository := user.NewRepository(db)
-	//userService := user.NewService(userRepository)
+	userRepository := user.NewRepository(db)
+	userService := user.NewService(userRepository)
+	userHandler := handler.NewUserHandler(userService)
+
+	router := gin.Default()
+	api := router.Group("/api/v1")
+
+	api.POST("/users", userHandler.RegisterUser)
+
+	router.Run()
+
 	//
 	//userInput := user.RegisterUserInput{}
 	//userInput.Email = "test@gmail.com"
