@@ -17,6 +17,17 @@ func main() {
 
 	fmt.Println("Connection to database")
 
+	//userRepository := user.NewRepository(db)
+	//userService := user.NewService(userRepository)
+	//
+	//userInput := user.RegisterUserInput{}
+	//userInput.Email = "test@gmail.com"
+	//userInput.Name = "testttt"
+	//userInput.Password = "asras"
+	//userInput.Occupation = "programmer"
+	//
+	//userService.RegisterUser(userInput)
+
 	//var users []user.User
 	//
 	//db.Find(&users)
