@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/helper"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/user"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -32,5 +33,13 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		log.Println(err)
 	}
 
-	c.JSON(http.StatusOK, newUser)
+	token := "testing"
+	formatterUser := user.FormatterUser(newUser, token)
+
+	message := "Account has been registered"
+	status := "Success"
+
+	response := helper.ResponseApi(message, status, http.StatusOK, formatterUser)
+
+	c.JSON(http.StatusOK, response)
 }
