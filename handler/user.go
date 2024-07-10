@@ -56,4 +56,36 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 func (h *userHandler) LoginUser(c *gin.Context) {
 
+	messageSuccess := "Login Success"
+	statusSuccess := "success"
+	messageFailed := "Login Failed"
+	statusFailed := "error"
+
+	var input user.LoginUserInput
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.ResponseApi(messageFailed, statusFailed, http.StatusBadRequest, errorMessage)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	loginUser, err := h.userService.LoginUser(input)
+	if err != nil {
+		errorMessage := gin.H{"errors": err.Error()}
+		response := helper.ResponseApi(messageFailed, statusFailed, http.StatusBadRequest, errorMessage)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	token := "testing"
+	formatterUser := user.FormatterUser(loginUser, token)
+
+	response := helper.ResponseApi(messageSuccess, statusSuccess, http.StatusOK, formatterUser)
+
+	c.JSON(http.StatusOK, response)
+
 }

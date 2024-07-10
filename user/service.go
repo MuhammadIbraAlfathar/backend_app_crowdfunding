@@ -51,7 +51,7 @@ func (s *service) LoginUser(input LoginUserInput) (User, error) {
 		return user, err
 	}
 	if user.ID == 0 {
-		return user, errors.New("Not User Found on That Email")
+		return user, errors.New("not User Found on That Email")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
