@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/helper"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/user"
 	"github.com/gin-gonic/gin"
@@ -126,4 +127,55 @@ func (h *userHandler) IsEmailAvailable(c *gin.Context) {
 
 	response := helper.ResponseApi(metaMessage, statusSuccess, http.StatusOK, data)
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *userHandler) UploadAvatar(c *gin.Context) {
+
+	messageFailed := "Failed to upload avatar image"
+	messageSuccess := "Avatar successfuly uploaded"
+	statusError := "error"
+	statusSuccess := "success"
+
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		data := gin.H{
+			"is_uploaded": false,
+		}
+		response := helper.ResponseApi(messageFailed, statusError, http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	//Harusnya dapat dari jwt
+	userId := 16
+
+	path := fmt.Sprintf("images/%d-%s", userId, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{
+			"is_uploaded": false,
+		}
+		response := helper.ResponseApi(messageFailed, statusError, http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	_, err = h.userService.SaveAvatar(userId, path)
+	if err != nil {
+		data := gin.H{
+			"is_uploaded": false,
+		}
+		response := helper.ResponseApi(messageFailed, statusError, http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	data := gin.H{
+		"is_uploaded": true,
+	}
+
+	response := helper.ResponseApi(messageSuccess, statusSuccess, http.StatusOK, data)
+	c.JSON(http.StatusOK, response)
+	return
 }
