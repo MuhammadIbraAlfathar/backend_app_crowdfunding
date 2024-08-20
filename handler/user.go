@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/auth"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/helper"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/user"
 	"github.com/gin-gonic/gin"
@@ -11,11 +12,13 @@ import (
 
 type userHandler struct {
 	userService user.Service
+	authService auth.Service
 }
 
-func NewUserHandler(userService user.Service) *userHandler {
+func NewUserHandler(userService user.Service, authService auth.Service) *userHandler {
 	return &userHandler{
 		userService: userService,
+		authService: authService,
 	}
 }
 
@@ -47,7 +50,13 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	token := "testing"
+	token, err := h.authService.GenerateToken(newUser.ID)
+	if err != nil {
+		response := helper.ResponseApi(messageFailed, statusFailed, http.StatusInternalServerError, nil)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
 	formatterUser := user.FormatterUser(newUser, token)
 
 	response := helper.ResponseApi(messageSuccess, statusSuccess, http.StatusOK, formatterUser)
@@ -82,7 +91,12 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	token := "testing"
+	token, err := h.authService.GenerateToken(loginUser.ID)
+	if err != nil {
+		response := helper.ResponseApi(messageFailed, statusFailed, http.StatusInternalServerError, nil)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
 	formatterUser := user.FormatterUser(loginUser, token)
 
 	response := helper.ResponseApi(messageSuccess, statusSuccess, http.StatusOK, formatterUser)

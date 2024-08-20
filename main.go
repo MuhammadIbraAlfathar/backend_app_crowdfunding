@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/auth"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/handler"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/user"
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,11 @@ func main() {
 
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
-	userHandler := handler.NewUserHandler(userService)
+	authService := auth.NewJwtService()
+	userHandler := handler.NewUserHandler(userService, authService)
+
+	//
+	//fmt.Println(authService.GenerateToken(1001))
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
