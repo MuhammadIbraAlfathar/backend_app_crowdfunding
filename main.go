@@ -33,10 +33,8 @@ func main() {
 	authService := auth.NewJwtService()
 	campaignService := campaign.NewService(campaignRepository)
 
-	campaigns, _ := campaignService.FindCampaigns(23)
-	fmt.Println(len(campaigns))
-
 	userHandler := handler.NewUserHandler(userService, authService)
+	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
@@ -46,6 +44,9 @@ func main() {
 	api.POST("/sessions", userHandler.LoginUser)
 	api.POST("/check-email", userHandler.IsEmailAvailable)
 	api.POST("/avatar", authMiddleware(authService, userService), userHandler.UploadAvatar)
+
+	//campaign
+	api.GET("/campaigns", campaignHandler.GetCampaigns)
 
 	router.Run()
 }
