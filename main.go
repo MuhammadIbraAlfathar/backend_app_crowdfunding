@@ -45,6 +45,7 @@ func main() {
 	{
 		//campaign
 		api.GET("/campaigns", campaignHandler.GetCampaigns)
+		api.GET("/campaign/:id", campaignHandler.GetDetailCampaignById)
 
 		//upload avatar
 		api.POST("/avatar", userHandler.UploadAvatar)
