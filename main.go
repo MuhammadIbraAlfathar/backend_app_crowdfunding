@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/auth"
+	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/campaign"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/handler"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/helper"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/user"
@@ -26,12 +27,16 @@ func main() {
 	fmt.Println("Connection to database")
 
 	userRepository := user.NewRepository(db)
+	campaignRepository := campaign.NewRepository(db)
+
 	userService := user.NewService(userRepository)
 	authService := auth.NewJwtService()
-	userHandler := handler.NewUserHandler(userService, authService)
+	campaignService := campaign.NewService(campaignRepository)
 
-	//
-	//fmt.Println(authService.GenerateToken(1001))
+	campaigns, _ := campaignService.FindCampaigns(23)
+	fmt.Println(len(campaigns))
+
+	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
