@@ -1,6 +1,7 @@
 package campaign
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gosimple/slug"
 )
@@ -9,6 +10,7 @@ type Service interface {
 	GetCampaigns(userId int) ([]Campaign, error)
 	GetCampaignByCampaignId(input GetDetailCampaignInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput) (Campaign, error)
+	UpdateCampaign(inputId GetDetailCampaignInput, inputData CreateCampaignInput) (Campaign, error)
 }
 
 type service struct {
@@ -66,4 +68,28 @@ func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
 		return newCampaign, err
 	}
 	return newCampaign, nil
+}
+
+func (s *service) UpdateCampaign(inputId GetDetailCampaignInput, inputData CreateCampaignInput) (Campaign, error) {
+	campaign, err := s.repository.FindCampaignByCampaignId(inputId.Id)
+	if err != nil {
+		return campaign, err
+	}
+
+	if campaign.UserId != inputData.User.ID {
+		return campaign, errors.New("failed updated campaign")
+	}
+
+	campaign.Name = inputData.Name
+	campaign.Description = inputData.Description
+	campaign.ShortDescription = inputData.ShortDescription
+	campaign.GoalAmount = inputData.GoalAmount
+	campaign.Perks = inputData.Perks
+
+	updatedCampaign, err := s.repository.UpdateCampaign(campaign)
+	if err != nil {
+		return updatedCampaign, err
+	}
+
+	return updatedCampaign, nil
 }
