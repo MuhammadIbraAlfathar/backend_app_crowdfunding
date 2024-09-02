@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/campaign"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/helper"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/user"
@@ -115,4 +116,51 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
 
 	response := helper.ResponseApi("Success update campaign", "success", http.StatusOK, campaign.FormatCampaign(updatedCampaign))
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *campaignHandler) UploadImage(c *gin.Context) {
+	var input campaign.CreateCampaignImageInput
+	err := c.ShouldBind(&input)
+	if err != nil {
+		response := helper.ResponseApi("Failed to upload campaign image", "error", http.StatusBadRequest, nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		data := gin.H{
+			"is_uploaded": false,
+		}
+		response := helper.ResponseApi("Failed to upload campaign image", "error", http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+	userId := currentUser.ID
+	input.User = currentUser
+
+	path := fmt.Sprintf("images/%d-%s", userId, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{
+			"is_uploaded": false,
+		}
+		response := helper.ResponseApi("Failed to upload campaign image", "error", http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	image, err := h.service.CreateCampaignImage(input, path)
+	if err != nil {
+		response := helper.ResponseApi("Failed to upload campaign image", "error", http.StatusBadRequest, nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	response := helper.ResponseApi("Success to upload campaign image", "success", http.StatusOK, image)
+	c.JSON(http.StatusOK, response)
+	return
+
 }

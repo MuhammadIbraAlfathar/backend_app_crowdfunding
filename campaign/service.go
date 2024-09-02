@@ -11,6 +11,7 @@ type Service interface {
 	GetCampaignByCampaignId(input GetDetailCampaignInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput) (Campaign, error)
 	UpdateCampaign(inputId GetDetailCampaignInput, inputData CreateCampaignInput) (Campaign, error)
+	CreateCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error)
 }
 
 type service struct {
@@ -92,4 +93,35 @@ func (s *service) UpdateCampaign(inputId GetDetailCampaignInput, inputData Creat
 	}
 
 	return updatedCampaign, nil
+}
+
+func (s *service) CreateCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error) {
+	campaign, err := s.repository.FindCampaignByCampaignId(input.CampaignId)
+	if err != nil {
+		return CampaignImage{}, err
+	}
+	if campaign.UserId != input.User.ID {
+		return CampaignImage{}, errors.New("failed upload campaign image")
+	}
+
+	isPrimary := 0
+	if input.IsPrimary {
+		isPrimary = 1
+		_, err := s.repository.MarkAllImagesAsNonPrimary(input.CampaignId)
+		if err != nil {
+			return CampaignImage{}, err
+		}
+	}
+
+	campaignImage := CampaignImage{}
+	campaignImage.CampaignId = input.CampaignId
+	campaignImage.IsPrimary = isPrimary
+	campaignImage.FileName = fileLocation
+
+	image, err := s.repository.CreateImage(campaignImage)
+	if err != nil {
+		return campaignImage, err
+	}
+
+	return image, nil
 }
