@@ -6,6 +6,7 @@ import (
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/campaign"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/handler"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/helper"
+	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/transaction"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/user"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -28,13 +29,16 @@ func main() {
 
 	userRepository := user.NewRepository(db)
 	campaignRepository := campaign.NewRepository(db)
+	transactionRepository := transaction.NewRepository(db)
 
 	userService := user.NewService(userRepository)
 	authService := auth.NewJwtService()
 	campaignService := campaign.NewService(campaignRepository)
+	transactionService := transaction.NewService(transactionRepository, campaignRepository)
 
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
 	router.Static("/images", "./images")
@@ -57,6 +61,10 @@ func main() {
 
 		//upload avatar
 		api.POST("/avatar", userHandler.UploadAvatar)
+
+		//transactions
+		api.GET("/transactions/campaign/:id", transactionHandler.GetTransactionsCampaignByCampaignId)
+		api.GET("/transactions/campaign/user", transactionHandler.GetTransactionsByUserId)
 	}
 
 	router.Run()
