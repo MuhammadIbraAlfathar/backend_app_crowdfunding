@@ -6,6 +6,7 @@ type Repository interface {
 	GetTransactionByCampaignId(CampaignId int) ([]Transaction, error)
 	GetTransactionByUserId(UserId int) ([]Transaction, error)
 	CreateTransaction(transaction Transaction) (Transaction, error)
+	UpdateTransaction(transaction Transaction) (Transaction, error)
 }
 
 type repository struct {
@@ -40,6 +41,15 @@ func (r *repository) GetTransactionByUserId(UserId int) ([]Transaction, error) {
 
 func (r *repository) CreateTransaction(transaction Transaction) (Transaction, error) {
 	err := r.db.Create(&transaction).Error
+	if err != nil {
+		return transaction, err
+	}
+
+	return transaction, nil
+}
+
+func (r *repository) UpdateTransaction(transaction Transaction) (Transaction, error) {
+	err := r.db.Save(&transaction).Error
 	if err != nil {
 		return transaction, err
 	}

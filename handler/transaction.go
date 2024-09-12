@@ -5,6 +5,7 @@ import (
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/transaction"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/user"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 )
 
@@ -75,10 +76,11 @@ func (h *transactionHandler) CreateTransaction(c *gin.Context) {
 	if err != nil {
 		response := helper.ResponseApi("Failed to create transaction", "error", http.StatusBadRequest, nil)
 		c.JSON(http.StatusBadRequest, response)
+		log.Println(err.Error())
 		return
 	}
 
-	response := helper.ResponseApi("Success to create transaction", "success", http.StatusOK, newTransaction)
+	response := helper.ResponseApi("Success to create transaction", "success", http.StatusOK, transaction.FormatterCreateTransactionResponse(newTransaction))
 	c.JSON(http.StatusOK, response)
 	return
 

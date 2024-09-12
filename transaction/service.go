@@ -3,11 +3,13 @@ package transaction
 import (
 	"errors"
 	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/campaign"
+	"github.com/MuhammadIbraAlfathar/backend_app_crowdfunding/payment"
 )
 
 type service struct {
 	repository         Repository
 	campaignRepository campaign.Repository
+	paymentService     payment.Service
 }
 
 type Service interface {
@@ -16,9 +18,9 @@ type Service interface {
 	CreateTransaction(input CreateTransactionInput) (Transaction, error)
 }
 
-func NewService(repository Repository, campaignRepository campaign.Repository) *service {
+func NewService(repository Repository, campaignRepository campaign.Repository, paymentService payment.Service) *service {
 	return &service{
-		repository, campaignRepository,
+		repository, campaignRepository, paymentService,
 	}
 }
 
@@ -61,5 +63,22 @@ func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, 
 		return newTransaction, err
 	}
 
-	return newTransaction, nil
+	paymentTransaction := payment.Transaction{
+		Id:     newTransaction.Id,
+		Amount: newTransaction.Amount,
+	}
+
+	paymentUrl, err := s.paymentService.GetPaymentUrl(paymentTransaction, input.User)
+	if err != nil {
+		return newTransaction, err
+	}
+
+	newTransaction.PaymentUrl = paymentUrl
+
+	updatedTransaction, err := s.repository.UpdateTransaction(newTransaction)
+	if err != nil {
+		return updatedTransaction, err
+	}
+
+	return updatedTransaction, nil
 }
